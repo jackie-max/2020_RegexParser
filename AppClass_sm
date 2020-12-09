@@ -1,0 +1,116 @@
+// -*- tab-width: 4; -*-
+//
+// The contents of this file are subject to the Mozilla Public
+// License Version 1.1 (the "License"); you may not use this file
+// except in compliance with the License. You may obtain a copy of
+// the License at http://www.mozilla.org/MPL/
+//
+// Software distributed under the License is distributed on an "AS
+// IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// rights and limitations under the License.
+//
+// The Original Code is State Machine Compiler (SMC).
+//
+// The Initial Developer of the Original Code is Charles W. Rapp.
+// Portions created by Charles W. Rapp are
+// Copyright (C) 2000 - 2003 Charles W. Rapp.
+// All Rights Reserved.
+//
+// Contributor(s):
+//      Port to Python by Francois Perrad, francois.perrad@gadz.org
+//
+// State Machine
+//	This state machine is recognizes the regular expression 0*1*.
+//
+// RCS ID
+// $Id$
+//
+// CHANGE LOG
+// $Log$
+// Revision 1.1  2005/05/28 17:48:29  cwrapp
+// Added Python examples 1 - 4 and 7.
+//
+//
+
+%start Map1::Start
+%class AppClass
+
+%map Map1
+%%
+// State		Transition		End State		Action(s)
+
+Start {
+			    symb(c : char, counter : int)[c == "i"]               Start_1     {ResetCounter();}
+		        symb(c : char, counter : int)[c == "s"]               Start_2     {ResetCounter();}
+		        symb(c : char, counter : int)[c == "l"]               Start_3     {ResetCounter();}
+			    symb(c : char, counter : int) [(c >= "a" and c<="z") or (c >= "A" and c <= "Z")]               Name_Var     {ResetCounter();}
+}
+
+Start_1 {
+		        symb(c : char, counter : int)[counter == 1 and c == "n"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 2 and c == "t"]               nil     {Counter();}
+			    symb(c : char, counter : int)[counter == 3 and c == " "]               Name_Var     {ResetCounter();}
+}
+
+Start_2 {
+		        symb(c : char, counter : int)[counter == 1 and c == "h"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 2 and c == "o"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 3 and c == "r"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 4 and c == "t"]               nil     {Counter();}
+			    symb(c : char, counter : int)[counter == 5 and c == " "]               Name_Var     {ResetCounter();}
+}
+
+Start_3 {
+		        symb(c : char, counter : int)[counter == 1 and c == "o"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 2 and c == "n"]               nil     {Counter();}
+		        symb(c : char, counter : int)[counter == 3 and c == "g"]               nil     {Counter();}
+		    	symb(c : char, counter : int)[counter == 4 and c == " "]               Name_Var     {ResetCounter();}
+}
+
+
+Name_Var {
+		        symb(c : char, counter : int) [((c >= "a" and c<="z") or (c >= "A" and c <= "Z") and counter == 1) or ((c >= "a" and c<="z") or (c >= "A" and c <= "Z") or (c >= "0" and c <= "9") and counter >= 1 and counter <= 15 or (c >= "0" and c <= "9"))]               nil     {Counter();}
+			symb(c : char, counter : int) [c == ":"]				Equal	{ResetCounter();}
+}
+
+Equal {
+			symb(c : char, counter : int) [c == "=" ]				LString	{}	
+}	
+
+LString {
+
+		        symb(c : char, counter : int) [((c >= "a" and c<="z") or (c >= "A" and c <= "Z") and counter == 1) or ((c >= "a" and c<="z") or (c >= "A" and c <= "Z") or (c >= "0" and c <= "9") and counter >= 1 and counter <= 15)]               nil     {Counter();}
+			symb(c : char, counter : int) [(c >= "0" and c <= "9") and counter == 1] 	Num	{ResetCounter();}
+		        symb(c : char, counter : int) [c == " "]				Sign	{ResetCounter();}
+			symb(c : char, counter : int) [c == '\n']				OK			{Acceptable();}
+			EOS				OK		{Acceptable();}
+}
+
+Num {
+			symb(c : char, counter : int) [(c >= "0" and c <= "9")] 	nil	{}
+			symb(c : char, counter : int) [c == " "]			Sign	{}
+			symb(c : char, counter : int) [c == '\n']			OK			{Acceptable();}
+			EOS				OK		{Acceptable();}
+}
+
+
+Sign {
+		    	symb(c : char, counter : int)[c == "+" and counter == 1]               nil      {Counter();}
+		        symb(c : char, counter : int)[c == "-" and counter == 1]               nil      {Counter();}
+		        symb(c : char, counter : int)[c == "*" and counter == 1]               nil      {Counter();}
+		        symb(c : char, counter : int)[c == "/" and counter == 1]               nil      {Counter();}
+			symb(c : char, counter : int)[c == " " and counter == 2]	       LString	{ResetCounter();}
+}
+
+OK {}
+
+Error {
+				EOS				nil				{Unacceptable();}
+}
+Default
+{
+                symb(c : char, counter : int)		Error           {}
+		        EOS	         	Error           {Acceptable();}
+}
+%%
