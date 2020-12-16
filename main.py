@@ -8,6 +8,8 @@ class AppClass:
         self.counter = 0
         self.Name_Var = ''
         self.Name_Type = ''
+        self.valid = False
+        self.Was_Type = False
 
     def Name_Var(self):
         return self.Name_Var
@@ -23,6 +25,7 @@ class AppClass:
 
     def Acceptable(self):
         self._is_acceptable = True
+        print('rtfgcvhcfgcyhkcjgtdxckhgj')
 
     def Unacceptable(self):
         self._is_acceptable = False
@@ -39,12 +42,28 @@ class AppClass:
     def check(self, string):
         self._fsm.enterStartState()
         for c in string:
+            print(self.counter)
             self._fsm.symb(c, self.counter)
+        if self.Was_Type == True and self.valid == False:
+            self._fsm.buffer()
         self._fsm.EOS()
-        return self._is_acceptable, self.Name_Var, self.Name_Type
+        return self._is_acceptable, self.Name_Type, self.Name_Var
 
 
-string = "dueph85:=77 + t"
+    def Check_Type(self, c):
+        if self.Name_Type != "int" and self.Name_Type != "short" and self.Name_Type != "long" :
+            print('fvbgvftdcygu')
+            self.valid = False
+        else:
+            self.valid = True
+            print('fjdbhbh')
+
+    def Reset_Name_Var(self, c):
+        self.Name_Var = ""
+
+    def Set_Was_Type(self):
+        self.Was_Type = True
+string = "sdxcfvbgnh:=ffvh + gnfghfg"
 Avtomat = AppClass()
 result = Avtomat.check(string)
 print(result)
